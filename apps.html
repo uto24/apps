@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My App List (Personal)</title>
+    <style>
+        /* --- বেসিক রিসেট এবং সেটআপ --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f2f5; /* একটু ভিন্ন ব্যাকগ্রাউন্ড */
+            color: #1c1e21; /* ফেসবুকের মতো ডার্ক টেক্সট */
+            padding: 20px;
+        }
+
+        /* --- কন্টেইনার --- */
+        .app-container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1877f2; /* ফেসবুকের মতো নীল রঙ */
+            font-size: 2rem;
+        }
+
+        /* --- সার্চ বার --- */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #search-input {
+            padding: 10px 15px;
+            border: 1px solid #dddfe2;
+            border-radius: 20px; /* গোলাকার প্রান্ত */
+            width: 100%;
+            max-width: 500px; /* সার্চ বারকে বেশি চওড়া হতে দেবে না */
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: #1877f2;
+            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+        }
+
+        /* --- অ্যাপ লিস্ট গ্রিড --- */
+        .app-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* ছোট কার্ডের জন্য minmax সমন্বয় */
+            gap: 20px; /* গ্যাপ কিছুটা কমানো হলো */
+        }
+
+        /* --- অ্যাপ কার্ড স্টাইল এবং অ্যানিমেশন --- */
+        @keyframes fadeIn { /* সাধারণ ফেড ইন অ্যানিমেশন */
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .app-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            padding: 18px; /* প্যাডিং সামান্য কমানো */
+            display: flex;
+            flex-direction: column;
+            opacity: 0; /* অ্যানিমেশনের জন্য শুরুতে অদৃশ্য */
+            animation: fadeIn 0.5s ease forwards; /* লোড অ্যানিমেশন */
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            will-change: transform, box-shadow;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px); /* হোভারে সামান্য উপরে উঠবে */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- কার্ডের ভেতরের কনটেন্ট --- */
+        .app-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .app-icon {
+            width: 40px; /* আইকন ছোট করা হলো */
+            height: 40px;
+            object-fit: contain;
+            border-radius: 6px;
+            flex-shrink: 0;
+             /* AppSheet আইকনের জন্য একটি ডিফল্ট যোগ করা যেতে পারে */
+            background-color: #eee; /* যদি আইকন লোড না হয় */
+        }
+
+        .app-card h3 {
+            font-size: 1.1rem;
+            color: #1c1e21;
+            margin-bottom: 0;
+            flex-grow: 1;
+             white-space: nowrap; /* নাম লম্বা হলে এক লাইনে রাখার চেষ্টা */
+             overflow: hidden;
+             text-overflow: ellipsis;
+        }
+
+        .app-description {
+            font-size: 0.85rem; /* বর্ণনা ফন্ট ছোট */
+            color: #606770; /* ফেসবুকের সেকেন্ডারি টেক্সট কালার */
+            margin-bottom: 15px;
+            flex-grow: 1;
+            min-height: 35px; /* বর্ণনার জন্য ন্যূনতম উচ্চতা */
+            /* একাধিক লাইন দেখানোর জন্য */
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* ২ লাইন পর ... দেখাবে */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .visit-link {
+            display: inline-block;
+            background-color: #1877f2; /* ফেসবুক ব্লু */
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 12px; /* বাটন প্যাডিং কমানো */
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem; /* বাটন টেক্সট সামান্য ছোট */
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            margin-top: auto; /* বাটন নিচে থাকবে */
+        }
+
+        .visit-link:hover {
+            background-color: #166fe5; /* হোভারে সামান্য গাঢ় নীল */
+            transform: scale(1.03);
+        }
+
+        /* --- ফিল্টারিং অ্যানিমেশন স্টেট (শুধুমাত্র দেখানোর জন্য, সার্চের জন্য সরাসরি রিরেন্ডার করা হচ্ছে) --- */
+        .app-card.hide {
+            /* সরাসরি ডোম থেকে সরানো হচ্ছে, তাই হাইড ক্লাসের দরকার নেই সার্চের জন্য */
+            /* display: none; */
+        }
+
+         /* --- কোনো ফলাফল না পাওয়া গেলে দেখানোর মেসেজ --- */
+        .no-results {
+            grid-column: 1 / -1; /* সব কলাম জুড়ে থাকবে */
+            text-align: center;
+            color: #606770;
+            padding: 30px 15px;
+            font-size: 1rem;
+            display: none; /* শুরুতে হিডেন থাকবে */
+        }
+
+        /* --- রেস্পন্সিভ ডিজাইন --- */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .app-container { padding: 0 10px; }
+             h1 { font-size: 1.6rem; margin-bottom: 20px; }
+             .app-list { gap: 15px; grid-template-columns: 1fr; /* ছোট স্ক্রিনে এক কলাম */ }
+              .app-card { padding: 15px; }
+             #search-input { font-size: 0.9rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="app-container">
+        <h1>আমার অ্যাপ লিস্ট</h1>
+
+        <div class="search-container">
+            <input type="search" id="search-input" placeholder="অ্যাপ সার্চ করুন...">
+        </div>
+
+        <div class="app-list" id="appList">
+            <!-- অ্যাপ কার্ডগুলো এখানে জাভাস্ক্রিপ্ট দিয়ে যোগ করা হবে -->
+        </div>
+        <p class="no-results" id="noResultsMessage">আপনার সার্চের সাথে মিলে এমন কোনো অ্যাপ পাওয়া যায়নি।</p>
+    </main>
+
+    <script>
+        // --- অ্যাপ ডেটা (এখানে আপনার অ্যাপের তথ্য যোগ করুন) ---
+        // প্রতিটি অ্যাপের জন্য একটি অবজেক্ট তৈরি করুন
+        // visitUrl এ আপনার AppSheet অ্যাপের লিংক দিন
+        const appsData = [
+            {
+                id: 1,
+                name: "Post Management",
+                description: "-",
+                // আইকন URL না থাকলে এটি ফাঁকা রাখুন বা একটি ডিফল্ট ব্যবহার করুন
+                iconUrl: "", // উদাহরণ AppSheet আইকন
+                visitUrl: "/post" // *** আপনার AppSheet অ্যাপ আইডি দিয়ে পরিবর্তন করুন ***
+            },
+            {
+                id: 2,
+                name: "Quantum SMM Market Analysis",
+                description: "ছোট ব্যবসার জন্য ইনভেন্টরি পরিচালনা করার AppSheet অ্যাপ।",
+                iconUrl: "", // উদাহরণ AppSheet আইকন
+                visitUrl: "/smm_market" // *** আপনার AppSheet অ্যাপ আইডি দিয়ে পরিবর্তন করুন ***
+            },
+            {
+                id: 3,
+                name: "Free Fire Market Analysis",
+                description: "কাজের তালিকা তৈরি ও পরিচালনা করার সহজ অ্যাপ। AppSheet দিয়ে তৈরি।",
+                iconUrl: "", // কোনো আইকন না থাকলে ফাঁকা রাখুন
+                visitUrl: "/ff_market" // *** আপনার AppSheet অ্যাপ আইডি দিয়ে পরিবর্তন করুন ***
+            },
+            {
+                id: 4,
+                name: "Client Contact Book",
+                description: "ক্লায়েন্টদের যোগাযোগের তথ্য সংরক্ষণের জন্য অ্যাপ (AppSheet)।",
+                iconUrl: "",
+                visitUrl: "https://www.appsheet.com/start/YOUR-CONTACT-APP-ID" // *** আপনার AppSheet অ্যাপ আইডি দিয়ে পরিবর্তন করুন ***
+            },
+             {
+                id: 5,
+                name: "Reading Log",
+                description: "কোন বইগুলো পড়ছেন তার ট্র্যাক রাখার জন্য।",
+                iconUrl: "",
+                visitUrl: "https://www.appsheet.com/start/YOUR-READING-LOG-APP-ID" // *** আপনার AppSheet অ্যাপ আইডি দিয়ে পরিবর্তন করুন ***
+             }
+            // --- এখানে আপনার নিজের আরও অ্যাপ যোগ করুন ---
+            // {
+            //     id: 6,
+            //     name: "আপনার অ্যাপের নাম",
+            //     description: "অ্যাপের সংক্ষিপ্ত বিবরণ।",
+            //     iconUrl: "আপনার_আইকনের_লিঙ্ক.png", // প্রয়োজন হলে
+            //     visitUrl: "আপনার_AppSheet_লিঙ্ক"
+            // },
+        ];
+
+        // --- DOM Elements ---
+        const appListContainer = document.getElementById('appList');
+        const searchInput = document.getElementById('search-input');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+
+        // --- Functions ---
+
+        /**
+         * অ্যাপ কার্ডগুলো DOM এ রেন্ডার করে।
+         * @param {Array} apps - অ্যাপ অবজেক্টের অ্যারে।
+         */
+        function renderApps(apps) {
+            appListContainer.innerHTML = ''; // আগের কনটেন্ট মুছে ফেলা হচ্ছে
+
+            if (apps.length === 0) {
+                 noResultsMessage.style.display = 'block'; // কোনো ফলাফল না থাকলে মেসেজ দেখানো হচ্ছে
+                 return;
+             } else {
+                 noResultsMessage.style.display = 'none'; // ফলাফল থাকলে মেসেজ লুকানো হচ্ছে
+             }
+
+            apps.forEach((app, index) => {
+                const card = document.createElement('article');
+                card.className = 'app-card';
+                // অ্যানিমেশনের জন্য স্ট্যাগারড ডিলে যোগ করা
+                card.style.animationDelay = `${index * 50}ms`;
+
+                // আইকন না থাকলে ডিফল্ট কিছু দেখানোর ব্যবস্থা (অপশনাল)
+                const iconHTML = app.iconUrl
+                    ? `<img src="${app.iconUrl}" alt="${app.name} Icon" class="app-icon" loading="lazy">`
+                    : `<div class="app-icon" style="background-color: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666;">${app.name.charAt(0)}</div>`; // আইকন না থাকলে প্রথম অক্ষর
+
+                card.innerHTML = `
+                    <div class="app-card-header">
+                        ${iconHTML}
+                        <h3>${app.name}</h3>
+                    </div>
+                    <p class="app-description">${app.description}</p>
+                    <a href="${app.visitUrl}" class="visit-link" target="_blank" rel="noopener noreferrer">অ্যাপ ভিজিট করুন</a>
+                `;
+                appListContainer.appendChild(card);
+            });
+        }
+
+        /**
+         * সার্চ ইনপুটের উপর ভিত্তি করে অ্যাপ ফিল্টার করে।
+         */
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            const filteredApps = appsData.filter(app => {
+                const nameMatch = app.name.toLowerCase().includes(searchTerm);
+                const descriptionMatch = app.description.toLowerCase().includes(searchTerm);
+                return nameMatch || descriptionMatch; // নাম অথবা বিবরণে মিললে অ্যাপটি দেখানো হবে
+            });
+
+            renderApps(filteredApps);
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApps(appsData); // পৃষ্ঠা লোড হওয়ার সাথে সাথে সব অ্যাপ দেখানো হচ্ছে
+            // সার্চ ইনপুটে টাইপ করার সাথে সাথে ফিল্টার করার জন্য 'input' ইভেন্ট ব্যবহার করা হচ্ছে
+            // ডিবাউন্সিং ছাড়াই সরল রাখা হয়েছে ব্যক্তিগত ব্যবহারের জন্য
+            searchInput.addEventListener('input', handleSearch);
+        });
+
+    </script>
+
+</body>
+</html>
